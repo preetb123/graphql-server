@@ -26,6 +26,8 @@ const  {
 
 const pubsub = new PubSub();
 
+exports.pubsub = pubsub;
+
 const { getVideoById, getVideos, createVideo } = require('./src/data');
 
 const PORT = process.env.PORT || 3002;
@@ -34,7 +36,7 @@ const dev = process.env.NODE_ENV !== 'production';
 
 const videoType = new GraphQLObjectType({
   name: 'Video',
-  description: 'A video on Egghead.io',
+  description: 'A video to be released',
   fields: {
     id: {
       type: GraphQLID,
@@ -48,7 +50,7 @@ const videoType = new GraphQLObjectType({
       type: GraphQLInt,
       description: 'The duration of the video(in seconds)'
     },
-    watched: {
+    released: {
       type: GraphQLBoolean,
       description: 'Whether the viewer watched the video'
     },
@@ -80,6 +82,7 @@ const queryType = new GraphQLObjectType({
 
 const videoInputType = new GraphQLInputObjectType({
   name: 'VideoInput',
+  description: 'Input type for the video object',
   fields: {
     title: {
       type: new GraphQLNonNull(GraphQLString),
@@ -108,7 +111,6 @@ const mutationType = new GraphQLObjectType({
         }
       },
       resolve: (_, args) => {
-        pubsub.publish(VIDEO_ADDED, {video: args.video});
         return createVideo(args.video);
       }
     }
@@ -141,30 +143,21 @@ app.use('/graphql', graphqlExpress({
 }));
 
 app.use('/graphiql', graphiqlExpress({
-  endpointURL: '/graphql'
+  endpointURL: '/graphql',
+  subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`
 }))
-
-// app.use('/graphql', graphqlHttp({
-//   schema,
-//   graphiql: true,
-// }));
-
-// app.use('/graphiql', graphiqlExpress({
-//   endpointURL: '/graphql',
-//   subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`
-// }));
-
 
 const server = createServer(app);
 
 server.listen(PORT, () => {
+  new SubscriptionServer({
+    schema,
+    execute,
+    subscribe,
+    onConnect: () => console.log('client connected')
+  }, {
+    server,
+    path: '/subscriptions'
+  });
   console.log(`listening on http://localhost:${PORT}`);
-  // new SubscriptionServer({
-  //   execute,
-  //   subscribe,
-  //   schema,
-  // }, {
-  //   server,
-  //   path: '/subscriptions'
-  // });
 });

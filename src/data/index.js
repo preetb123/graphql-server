@@ -1,15 +1,17 @@
+const { pubsub } = require('../../index')
+
 const videoA = {
-    id: 'a',
-    title: 'Ember',
+    id: 'fksdlkfjsdlf',
+    title: 'This is first video added',
     duration: 240,
-    watched: false
+    released: false
 };
   
 const videoB = {
-    id: 'b',
-    title: 'Scott',
+    id: 'lsdkfskdfkldsfdlskfkd',
+    title: 'This is the second video',
     duration: 244,
-    watched: true
+    released: true
 };
   
 const videos = [videoA, videoB];
@@ -24,6 +26,10 @@ const createVideo = ({ title, duration, released }) => {
         released
     };
 
+    pubsub.publish('VIDEO_ADDED', {
+        videoAdded: video
+    });
+
     videos.push(video);
 
     return video;
@@ -34,7 +40,6 @@ const getVideoById = (id) => new Promise((resolve) => {
     const [video] = videos.filter((video) => {
         return video.id === id;
     });
-
     resolve(video);
 }); 
 
