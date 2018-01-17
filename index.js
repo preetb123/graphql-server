@@ -1,7 +1,6 @@
 'use strict'
 
 const express = require('express')
-const graphqlHttp = require('express-graphql')
 const { 
   GraphQLBoolean,
   GraphQLObjectType,
@@ -11,13 +10,27 @@ const {
   GraphQLID,
   GraphQLNonNull,
   GraphQLList,
-  GraphQLInputObjectType
+  GraphQLInputObjectType,
+  execute,
+  subscribe,
 } = require('graphql');
+
+const { createServer } = require('http');
+const bodyParser = require('body-parser');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
+const { PubSub } = require('graphql-subscriptions');
+const  {
+  graphqlExpress,
+  graphiqlExpress,
+} = require('graphql-server-express');
+
+const pubsub = new PubSub();
 
 const { getVideoById, getVideos, createVideo } = require('./src/data');
 
 const PORT = process.env.PORT || 3002;
-const server = express();
+const app = express();
+const dev = process.env.NODE_ENV !== 'production';
 
 const videoType = new GraphQLObjectType({
   name: 'Video',
@@ -95,8 +108,22 @@ const mutationType = new GraphQLObjectType({
         }
       },
       resolve: (_, args) => {
+        pubsub.publish(VIDEO_ADDED, {video: args.video});
         return createVideo(args.video);
       }
+    }
+  }
+});
+
+const VIDEO_ADDED = 'VIDEO_ADDED';
+
+const subscriptionType = new GraphQLObjectType ({
+  name: 'SubscriptionType',
+  description: 'The root subscription type',
+  fields:{
+    videoAdded: {
+      type: videoType,
+      subscribe: () => pubsub.asyncIterator(VIDEO_ADDED),
     }
   }
 });
@@ -104,13 +131,40 @@ const mutationType = new GraphQLObjectType({
 const schema = new GraphQLSchema({
   query: queryType,
   mutation: mutationType,
+  subscription: subscriptionType,
 });
 
-server.use('/graphql', graphqlHttp({
-  schema,
-  graphiql: true,
+app.use(bodyParser.json());
+
+app.use('/graphql', graphqlExpress({
+  schema
 }));
+
+app.use('/graphiql', graphiqlExpress({
+  endpointURL: '/graphql'
+}))
+
+// app.use('/graphql', graphqlHttp({
+//   schema,
+//   graphiql: true,
+// }));
+
+// app.use('/graphiql', graphiqlExpress({
+//   endpointURL: '/graphql',
+//   subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`
+// }));
+
+
+const server = createServer(app);
 
 server.listen(PORT, () => {
   console.log(`listening on http://localhost:${PORT}`);
+  // new SubscriptionServer({
+  //   execute,
+  //   subscribe,
+  //   schema,
+  // }, {
+  //   server,
+  //   path: '/subscriptions'
+  // });
 });
