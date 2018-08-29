@@ -19,4 +19,4 @@
 ![Mutation with query variables](https://user-images.githubusercontent.com/4496555/44783377-d79bcc00-aba7-11e8-9a40-b26e2f558da4.png)
 
 ### Subscriptions
-![Subscriptions](https://user-images.githubusercontent.com/4496555/44784913-c903e380-abac-11e8-92e5-e28371f652b7.gif)
+![Subscriptions](https://user-images.githubusercontent.com/4496555/44785647-3fa1e080-abaf-11e8-9d49-c9f29cba3318.gif)
