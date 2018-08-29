@@ -12,6 +12,6 @@
     "graphql": "^0.10.3",
     "graphql-server-express": "^1.0.0",
     "graphql-subscriptions": "^0.4.4",
-    "subscriptions-transport-ws": "^0.8.0"
+    "subscriptions-transport-ws": "0.8.3"
   }
 }

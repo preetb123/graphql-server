@@ -1,21 +1,21 @@
 const { pubsub } = require('../../index')
 
 const videoA = {
-    id: 'fksdlkfjsdlf',
+    id: 'one',
     title: 'This is first video added',
     duration: 240,
     released: false
 };
-  
+
 const videoB = {
-    id: 'lsdkfskdfkldsfdlskfkd',
+    id: 'two',
     title: 'This is the second video',
     duration: 244,
     released: true
 };
-  
+
 const videos = [videoA, videoB];
-  
+
 const getVideos = () => new Promise((resolve) => resolve(videos));
 
 const createVideo = ({ title, duration, released }) => {
@@ -41,7 +41,7 @@ const getVideoById = (id) => new Promise((resolve) => {
         return video.id === id;
     });
     resolve(video);
-}); 
+});
 
 exports.getVideoById = getVideoById;
 exports.getVideos = getVideos;
