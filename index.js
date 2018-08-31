@@ -1,7 +1,7 @@
 'use strict'
 
 const express = require('express')
-const { 
+const {
   GraphQLBoolean,
   GraphQLObjectType,
   GraphQLString,
@@ -19,7 +19,7 @@ const { createServer } = require('http');
 const bodyParser = require('body-parser');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const { PubSub } = require('graphql-subscriptions');
-const  {
+const {
   graphqlExpress,
   graphiqlExpress,
 } = require('graphql-server-express');
@@ -40,7 +40,7 @@ const videoType = new GraphQLObjectType({
   fields: {
     id: {
       type: GraphQLID,
-      description: 'The id of the video', 
+      description: 'The id of the video',
     },
     title: {
       type: GraphQLString,
@@ -111,6 +111,7 @@ const mutationType = new GraphQLObjectType({
         }
       },
       resolve: (_, args) => {
+        console.log(args.video);
         return createVideo(args.video);
       }
     }
@@ -119,10 +120,10 @@ const mutationType = new GraphQLObjectType({
 
 const VIDEO_ADDED = 'VIDEO_ADDED';
 
-const subscriptionType = new GraphQLObjectType ({
+const subscriptionType = new GraphQLObjectType({
   name: 'SubscriptionType',
   description: 'The root subscription type',
-  fields:{
+  fields: {
     videoAdded: {
       type: videoType,
       subscribe: () => pubsub.asyncIterator(VIDEO_ADDED),
@@ -154,10 +155,11 @@ server.listen(PORT, () => {
     schema,
     execute,
     subscribe,
-    onConnect: () => console.log('client connected')
+    onConnect: () => console.log('client connected'),
+    onDisconnect: () => console.log('client disconnected')
   }, {
-    server,
-    path: '/subscriptions'
-  });
+      server,
+      path: '/subscriptions'
+    });
   console.log(`listening on http://localhost:${PORT}`);
 });
